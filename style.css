@@ -6,6 +6,15 @@
     font-weight: 600;
 }
 
+.info-para{
+    font-family: roboto;
+}
+
+.info-span{
+    color: rgb(152, 41, 4);
+    font-weight: bold;
+}
+
 .detail-container{
     background-color: rgb(211, 231, 248);
     display: flex;
