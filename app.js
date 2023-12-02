@@ -8,14 +8,7 @@ let enemyCountry = document.getElementById("enemyCountry");
 
 let searchInputValue;
 
-let firstTimeNetworkCheck = false;
-
-let firstTimeAllow =  true;
-
-let networkCheck = false;
-
-let allow =  true;
-
+let gotSearchedCountry;
 
 function createAndAppendDetails(eachItem){
 
@@ -47,11 +40,14 @@ function createAndAppendDetails(eachItem){
 function sendAllData(jsonData){
 
     if(searchInputValue === ""){
-        FirstTimeFetchData();
+        firstTimeFetchData();
     }
     else{
         for(let eachItem of jsonData){
             if(eachItem.name === searchInputValue){
+
+                gotSearchedCountry = true;
+
                 if(searchInputValue === "Pakistan" || searchInputValue === "China"){
                     enemyCountry.classList.add("enemy-country");
                     enemyCountry.textContent = `${searchInputValue} ki ammi ka bhosda`;
@@ -59,13 +55,17 @@ function sendAllData(jsonData){
                 createAndAppendDetails(eachItem);
             }
         }
+
+        if(gotSearchedCountry === false){
+            enemyCountry.textContent = "Not found searched country. Please try another !!";
+            enemyCountry.classList.add("enemy-country");
+        }
     }
 };
 
-function fetchData(event){
+function fetchData(){
 
-    networkCheck = false;
-    allow = true;
+    gotSearchedCountry = false;
 
     enemyCountry.textContent = "";
     enemyCountry.classList.remove("enemy-country");
@@ -74,6 +74,38 @@ function fetchData(event){
     loading.classList.remove("d-none");
 
     searchInputValue = searchInputEL.value;
+
+    if(navigator.onLine){
+        null;
+    }
+    else{
+        if(searchInputValue === ""){
+
+            setTimeout(function(){
+                loading.classList.add("d-none");
+
+                enemyCountry.textContent = "Check your internet connection. Press backspace key in searchbox to reload";
+                enemyCountry.classList.add("enemy-country");
+
+            },500);
+
+            return true;
+            
+        }
+        else{
+
+            setTimeout(function(){
+                loading.classList.add("d-none");
+
+                enemyCountry.textContent = "Check your internet connection. Press again same text in searchbox to reload";
+                enemyCountry.classList.add("enemy-country");
+
+            },500);
+
+            return true;
+
+        }
+    }
 
     let url = "https://apis.ccbp.in/countries-data";
     let options = {
@@ -86,29 +118,14 @@ function fetchData(event){
     })
     .then(function(jsonData){
 
-        networkCheck = true;
-
         loading.classList.add("d-none");
 
         console.log(jsonData);
 
-        if(allow === true){
-            sendAllData(jsonData);
-        }
+        sendAllData(jsonData);
+
     });
 
-    setTimeout(function(){
-        if(networkCheck === false){
-
-            allow = false;
-
-            loading.classList.add("d-none");
-
-            enemyCountry.textContent = "Check your internet connection";
-            enemyCountry.classList.add("enemy-country");
-
-        }
-    },5000);
 
 }
 
@@ -119,10 +136,7 @@ function sendFirstTimeAllData(jsonData){
     }
 };
 
-function FirstTimeFetchData(){
-
-    firstTimeNetworkCheck = false;
-    firstTimeAllow = true;
+function firstTimeFetchData(){
 
     enemyCountry.textContent = "";
     enemyCountry.classList.remove("enemy-country");
@@ -135,37 +149,34 @@ function FirstTimeFetchData(){
         method: "GET"
     };
 
+    if(navigator.onLine){
+        enemyCountry.textContent = "";
+    }
+    else{
+        
+        setTimeout(function(){
+            loading.classList.add("d-none");
+
+            enemyCountry.textContent = "Check your internet connection. Press backspace key in searchbox to reload";
+            enemyCountry.classList.add("enemy-country");
+        },250);
+    }
+
     fetch(url, options)
     .then(function(response){
         return response.json();
     })
     .then(function(jsonData){
 
-        firstTimeNetworkCheck = true;
-
         loading.classList.add("d-none");
 
-        if(firstTimeAllow === true){
-            sendFirstTimeAllData(jsonData);
-        }
+        sendFirstTimeAllData(jsonData);
 
     });
 
-    setTimeout(function(){
-        if(firstTimeNetworkCheck === false){
-
-            firstTimeAllow = false;
-
-            loading.classList.add("d-none");
-
-            enemyCountry.textContent = "Check your internet connection";
-            enemyCountry.classList.add("enemy-country");
-
-        }
-    },5000);
 
 }
 
-FirstTimeFetchData();
+firstTimeFetchData();
 
 searchInputEL.addEventListener("keyup",fetchData);
